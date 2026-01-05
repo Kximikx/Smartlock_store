@@ -1,14 +1,13 @@
 <?php
-// Конфігурація бази даних
+
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'smartlock_db');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
-// Створення підключення до БД
-function getDBConnection() {
+function getDBConnection(): PDO {
     try {
-        $conn = new PDO(
+        return new PDO(
             "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
             DB_USER,
             DB_PASS,
@@ -18,17 +17,8 @@ function getDBConnection() {
                 PDO::ATTR_EMULATE_PREPARES => false
             ]
         );
-        return $conn;
-    } catch(PDOException $e) {
-        // ВАЖЛИВО: показуємо точну причину помилки!
-        die("DB ERROR: " . $e->getMessage());
+    } catch (PDOException $e) {
+        error_log('DB connection error: ' . $e->getMessage());
+        throw $e; // КЛЮЧОВИЙ РЯДОК
     }
 }
-
-// Налаштування сесії (правильно для localhost)
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-//ini_set('session.cookie_secure', 0); // <-- МАЄ бути 0 на localhost
-
-session_start();
-?>

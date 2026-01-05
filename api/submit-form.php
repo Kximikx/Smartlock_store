@@ -1,10 +1,14 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 // Функція для валідації email
 function validateEmail($email) {
@@ -23,7 +27,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$input) {
         $input = $_POST;
     }
-    
+    //
+    file_put_contents(
+    __DIR__ . '/debug.txt',
+    print_r([
+        'raw' => file_get_contents('php://input'),
+        '_POST' => $_POST
+    ], true)
+);
+
+    //
     // Валідація обов'язкових полів
     $required_fields = ['company', 'name', 'email', 'phone'];
     $errors = [];
@@ -45,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'success' => false,
             'message' => 'Помилка валідації',
             'errors' => $errors
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
     
@@ -56,56 +69,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Помилка підключення до бази даних');
         }
         
+        $company = sanitizeInput($input['company']);
+        $name = sanitizeInput($input['name']);
+        $position = sanitizeInput($input['position'] ?? '');
+        $email = sanitizeInput($input['email']);
+        $phone = sanitizeInput($input['phone']);
+        $quantity = sanitizeInput($input['quantity'] ?? '');
+        $message = sanitizeInput($input['message'] ?? '');
+        
         // Підготовка SQL запиту
-        $sql = "INSERT INTO contact_requests (company, name, position, email, phone, quantity, message) 
-                VALUES (:company, :name, :position, :email, :phone, :quantity, :message)";
+        $sql = "INSERT INTO contact_requests (company, name, position, email, phone, quantity, message, status, created_at) 
+                VALUES (:company, :name, :position, :email, :phone, :quantity, :message, 'new', NOW())";
         
         $stmt = $conn->prepare($sql);
         
         // Прив'язка параметрів
-        $stmt->bindParam(':company', sanitizeInput($input['company']));
-        $stmt->bindParam(':name', sanitizeInput($input['name']));
-        $stmt->bindParam(':position', sanitizeInput($input['position'] ?? ''));
-        $stmt->bindParam(':email', sanitizeInput($input['email']));
-        $stmt->bindParam(':phone', sanitizeInput($input['phone']));
-        $stmt->bindParam(':quantity', sanitizeInput($input['quantity'] ?? ''));
-        $stmt->bindParam(':message', sanitizeInput($input['message'] ?? ''));
+        $stmt->bindParam(':company', $company);
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':position', $position);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':phone', $phone);
+        $stmt->bindParam(':quantity', $quantity);
+        $stmt->bindParam(':message', $message);
         
         // Виконання запиту
-        $stmt->execute();
-        
-        // Відправка email сповіщення (опціонально)
-        $to = 'sales@smartlock.ua';
-        $subject = 'Новий запит з контактної форми SmartLock';
-        $message_body = "
-            Нова заявка від компанії: {$input['company']}\n
-            Ім'я: {$input['name']}\n
-            Email: {$input['email']}\n
-            Телефон: {$input['phone']}\n
-            Повідомлення: {$input['message']}
-        ";
-        
-        mail($to, $subject, $message_body);
-        
-        http_response_code(201);
-        echo json_encode([
-            'success' => true,
-            'message' => 'Дякуємо за ваш запит! Ми зв\'яжемося з вами найближчим часом.'
-        ]);
+        if ($stmt->execute()) {
+            http_response_code(201);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Дякуємо за ваш запит! Ми зв\'яжемося з вами найближчим часом.'
+            ], JSON_UNESCAPED_UNICODE);
+        } else {
+            throw new Exception('Помилка виконання запиту');
+        }
         
     } catch(Exception $e) {
-        error_log("Error: " . $e->getMessage());
+        error_log("Error in submit-form.php: " . $e->getMessage());
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'message' => 'Виникла помилка при обробці запиту. Спробуйте пізніше.'
-        ]);
+            'message' => 'Виникла помилка при обробці запиту. Спробуйте пізніше.',
+            'error' => $e->getMessage()
+        ], JSON_UNESCAPED_UNICODE);
     }
 } else {
     http_response_code(405);
     echo json_encode([
         'success' => false,
         'message' => 'Метод не дозволено'
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 }
 ?>

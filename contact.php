@@ -1,5 +1,8 @@
 <?php
-require_once "config/database.php";
+session_start();
+
+$success = isset($_GET['success']) ? $_GET['success'] : '';
+$error = isset($_GET['error']) ? $_GET['error'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="uk">
@@ -13,6 +16,7 @@ require_once "config/database.php";
     <nav class="navbar">
         <div class="container">
             <div class="nav-content">
+                <!-- Updated links from .html to .php -->
                 <a href="index.php" class="logo">SmartLock</a>
                 <div class="nav-links">
                     <a href="index.php" class="nav-link">Головна</a>
@@ -38,123 +42,136 @@ require_once "config/database.php";
         <section class="contact-section">
             <div class="container">
                 <div class="contact-content">
-
                     <div class="contact-info">
                         <h2>Наші контакти</h2>
                         <div class="info-items">
                             <div class="info-item">
                                 <div class="info-icon">
-                                    <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
                                 </div>
                                 <div class="info-text">
                                     <h3>Адреса офісу</h3>
-                                    <p>вул. Степана Бандери, 30<br>5 корпус Львівська Політехніка</p>
+                                    <p>вул. Хрещатик, 22<br>Київ, 01001, Україна</p>
                                 </div>
                             </div>
-
                             <div class="info-item">
                                 <div class="info-icon">
-                                    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                    </svg>
                                 </div>
                                 <div class="info-text">
                                     <h3>Телефон</h3>
-                                    <p>+380 66 40 52 588<br>Пн-Пт: 9:00 - 18:00</p>
+                                    <p>+380 44 123 4567<br>Пн-Пт: 9:00 - 18:00</p>
                                 </div>
                             </div>
-
                             <div class="info-item">
                                 <div class="info-icon">
-                                    <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
                                 </div>
                                 <div class="info-text">
                                     <h3>Email</h3>
-                                    <p>hordiisvd@gmail.com</p>
+                                    <p>sales@smartlock.ua<br>support@smartlock.ua</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="contact-form-wrapper">
+                        <!-- Added PHP feedback messages -->
+                        <?php if ($success): ?>
+                            <div class="alert alert-success">
+                                Дякуємо! Ваш запит успішно надіслано. Ми зв'яжемося з вами найближчим часом.
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($error): ?>
+                            <div class="alert alert-error">
+                                Помилка відправки. Будь ласка, спробуйте ще раз або зв'яжіться з нами за телефоном.
+                            </div>
+                        <?php endif; ?>
+
                         <form class="contact-form" id="contactForm">
                             <h2>Надішліть запит</h2>
                             <p class="form-description">Заповніть форму і ми зв'яжемося з вами протягом 24 годин</p>
-
+                            
                             <div class="form-group">
-                                <label>Назва компанії *</label>
-                                <input type="text" name="company" required>
+                                <label for="company">Назва компанії *</label>
+                                <input type="text" id="company" name="company" required>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Ім'я *</label>
-                                    <input type="text" name="name" required>
+                                    <label for="name">Ім'я *</label>
+                                    <input type="text" id="name" name="name" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Посада</label>
-                                    <input type="text" name="position">
+                                    <label for="position">Посада</label>
+                                    <input type="text" id="position" name="position">
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Email *</label>
-                                    <input type="email" name="email" required>
+                                    <label for="email">Email *</label>
+                                    <input type="email" id="email" name="email" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Телефон *</label>
-                                    <input type="tel" name="phone" required>
+                                    <label for="phone">Телефон *</label>
+                                    <input type="tel" id="phone" name="phone" required>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label>Кількість замків</label>
-                                <select name="quantity">
-                                    <option value="">Оберіть</option>
+                                <label for="quantity">Приблизна кількість замків</label>
+                                <select id="quantity" name="quantity">
+                                    <option value="">Оберіть кількість</option>
                                     <option value="1-10">1-10 шт</option>
                                     <option value="11-50">11-50 шт</option>
                                     <option value="51-100">51-100 шт</option>
-                                    <option value="100+">100+</option>
+                                    <option value="100+">Більше 100 шт</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
-                                <label>Повідомлення</label>
-                                <textarea name="message" rows="5"></textarea>
+                                <label for="message">Повідомлення</label>
+                                <textarea id="message" name="message" rows="5" placeholder="Розкажіть про ваші потреби та питання..."></textarea>
                             </div>
 
                             <button type="submit" class="btn-primary btn-large">Відправити запит</button>
-
-                            <div id="formStatus" style="margin-top:15px;"></div>
                         </form>
                     </div>
-
                 </div>
             </div>
         </section>
     </main>
 
-    <script>
-        document.getElementById("contactForm").addEventListener("submit", function(e){
-            e.preventDefault();
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">SmartLock</div>
+                    <p>Професійні рішення для контролю доступу</p>
+                </div>
+                <div class="footer-links">
+                    <!-- Updated links from .html to .php -->
+                    <a href="index.php">Головна</a>
+                    <a href="contact.php">Контакти</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SmartLock. Всі права захищено.</p>
+            </div>
+        </div>
+    </footer>
 
-            let formData = new FormData(this);
-
-            fetch("submit-form.php", {
-                method: "POST",
-                body: formData
-            })
-            .then(r => r.text())
-            .then(res => {
-                document.getElementById("formStatus").innerHTML = 
-                    "<span style='color:green'>Ваш запит успішно надіслано!</span>";
-                document.getElementById("contactForm").reset();
-            })
-            .catch(() => {
-                document.getElementById("formStatus").innerHTML =
-                    "<span style='color:red'>Помилка відправки!</span>";
-            });
-        });
-    </script>
-
+    <script src="script.js"></script>
+    <script src="contact-form.js"></script>
 </body>
 </html>
